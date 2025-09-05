@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caccia alle Stelle per Bea ❤️</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: radial-gradient(circle at center, #0d0d2b, #000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    canvas {
+      border: 3px solid #fff;
+      border-radius: 15px;
+      background: url('https://i.imgur.com/0TkJ0xh.png') center/cover no-repeat; /* sfondo cuore con B */
+      box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+    }
+
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 40px; /* pulsanti più distanziati */
+    }
+
+    button {
+      width: 70px;
+      height: 70px;
+      font-size: 28px;
+      border: none;
+      border-radius: 50%;
+      background: red;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:active {
+      transform: scale(1.2);
+    }
+
+    #message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      color: pink;
+      text-shadow: 0 0 15px red, 0 0 25px pink;
+      display: none;
+      text-align: center;
+      animation: pop 1s ease-in-out forwards;
+    }
+
+    @keyframes pop {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    .falling-heart {
+      position: absolute;
+      top: -30px;
+      font-size: 24px;
+      color: red;
+      text-shadow: 0 0 10px white, 0 0 20px red;
+      animation: fall 3s linear forwards;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(100vh); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <div id="controls">
+    <button id="left">⟵</button>
+    <button id="right">⟶</button>
+  </div>
+
+  <div id="message">Bea, sei il mio cuore, per sempre ❤️✨</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const player = { x: 180, y: 520, size: 40, speed: 20 };
+    let hearts = [];
+    let score = 0;
+    const targetScore = 6;
+    let gameOver = false;
+
+    function drawPlayer() {
+      ctx.font = "40px Arial";
+      ctx.fillText("❤️", player.x, player.y);
+    }
+
+    function drawHearts() {
+      ctx.font = "28px Arial";
+      hearts.forEach((h) => {
+        ctx.fillText("❤️", h.x, h.y);
+      });
+    }
+
+    function updateHearts() {
+      for (let i = 0; i < hearts.length; i++) {
+        hearts[i].y += 3;
+        if (
+          hearts[i].y > player.y - 20 &&
+          hearts[i].x > player.x - 20 &&
+          hearts[i].x < player.x + player.size
+        ) {
+          hearts.splice(i, 1);
+          score++;
+          i--;
+          if (score >= targetScore) endGame();
+        }
+      }
+    }
+
+    function spawnHeart() {
+      const x = Math.random() * (canvas.width - 30);
+      hearts.push({ x: x, y: 0 });
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawPlayer();
+      drawHearts();
+      updateHearts();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+      gameOver = true;
+      document.getElementById("message").style.display = "block";
+      for (let i = 0; i < 30; i++) {
+        createFallingHeart();
+      }
+    }
+
+    function createFallingHeart() {
+      const heart = document.createElement("div");
+      heart.classList.add("falling-heart");
+      heart.innerHTML = "❤️";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 3000);
+    }
+
+    // Controls
+    document.getElementById("left").addEventListener("click", () => {
+      if (player.x > 0) player.x -= player.speed;
+    });
+    document.getElementById("right").addEventListener("click", () => {
+      if (player.x < canvas.width - player.size) player.x += player.speed;
+    });
+
+    // Keyboard
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
+      if (e.key === "ArrowRight" && player.x < canvas.width - player.size)
+        player.x += player.speed;
+    });
+
+    setInterval(spawnHeart, 1500);
+    gameLoop();
+  </script>
+</body>
+</html>
